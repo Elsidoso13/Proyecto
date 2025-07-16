@@ -1,17 +1,58 @@
 <?php
-require_once 'conexion.php';
+require_once 'conection/conecta.php';
+require_once 'login_handler.php';
 
-
+// Si el usuario ya está logueado, redirigir o mostrar dashboard
+if (isset($_SESSION['user_id'])) {
+    // Opcionalmente puedes redirigir a un dashboard
+    // header('Location: dashboard.php');
+    // exit();
+}
 ?>
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Sistema de Login Retro</title>
+    <link rel="stylesheet" href="style.css">
 </head>
- <link rel="stylesheet" href="style.css">
 <body>
+    <!-- Modal para la cámara -->
+    <div id="cameraModal" class="camera-modal">
+        <div class="camera-modal-content">
+            <div class="camera-title-bar">
+                <div class="camera-title-text">📹 Verificación de Identidad</div>
+                <button class="camera-close" onclick="closeCameraModal()">×</button>
+            </div>
+            <div class="camera-body">
+                <video id="cameraVideo" autoplay playsinline></video>
+                <canvas id="cameraCanvas" style="display: none;"></canvas>
+                <div class="camera-controls">
+                    <button onclick="takePicture()">📸 Capturar</button>
+                    <button onclick="closeCameraModal()">❌ Cancelar</button>
+                </div>
+                <div class="camera-status">Sonríe para la cámara 📸</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para anuncios -->
+    <div id="adModal" class="ad-modal">
+        <div class="ad-modal-content">
+            <div class="ad-title-bar">
+                <div class="ad-title-text">🚀 Servicios en la Nube</div>
+                <button class="ad-close" onclick="closeAdModal()">×</button>
+            </div>
+            <div class="ad-body">
+                <div id="adContent"></div>
+                <div class="ad-buttons">
+                    <button onclick="visitAdLink()" id="visitBtn">🌐 Visitar</button>
+                    <button onclick="closeAdModal()">❌ Cerrar</button>
+                </div>
+            </div>
+        </div>
+    </div>
     <div class="window">
         <div class="title-bar">
             <div class="title-bar-text">Iniciar Sesión</div>
@@ -30,33 +71,48 @@ require_once 'conexion.php';
                 <div class="login-header">
                     <div class="login-icon">👤</div>
                     <div class="login-text">
-                    Intenta iniciar sesión si puedes.
+                        <?php if (isset($_SESSION['user_id'])): ?>
+                            ¡Hola, <?php echo htmlspecialchars($_SESSION['first_name']); ?>!
+                        <?php else: ?>
+                            Intenta iniciar sesión si puedes.
+                        <?php endif; ?>
+                    </div>
                 </div>
+                
+                <?php if (isset($_SESSION['user_id'])): ?>
+                    <div class="user-info">
+                        <p><strong>Usuario:</strong> <?php echo htmlspecialchars($_SESSION['username']); ?></p>
+                        <p><strong>Email:</strong> <?php echo htmlspecialchars($_SESSION['email']); ?></p>
+                        <p><strong>Nombre:</strong> <?php echo htmlspecialchars($_SESSION['first_name'] . ' ' . $_SESSION['last_name']); ?></p>
+                        <div class="button-row">
+                            <button type="button" onclick="handleLogout()">Cerrar Sesión</button>
+                        </div>
+                    </div>
+                <?php else: ?>
+                    <form class="login-form" id="loginForm" onsubmit="handleLogin(event)">
+                        <div class="field-row">
+                            <label for="username">Usuario/Email:</label>
+                            <input type="text" id="username" name="username" required>
+                        </div>
+                        
+                        <div class="field-row">
+                            <label for="password">Contraseña:</label>
+                            <input type="password" id="password" name="password" required>
+                        </div>
+                        
+                        <div class="checkbox-row">
+                            <input type="checkbox" id="remember" name="remember">
+                            <label for="remember">Recordar contraseña</label>
+                        </div>
+                        
+                        <div class="button-row">
+                            <button type="button" onclick="handleCancel()">Cancelar</button>
+                            <button type="submit">Aceptar</button>
+                        </div>
+                    </form>
+                <?php endif; ?>
             </div>
             
-            <form class="login-form" onsubmit="handleLogin(event)">
-                <div class="field-row">
-                    <label for="username">Usuario:</label>
-                    <input type="text" id="username" name="username" required>
-                </div>
-                
-                <div class="field-row">
-                    <label for="password">Contraseña:</label>
-                    <input type="password" id="password" name="password" required>
-                </div>
-                
-                <div class="checkbox-row">
-                    <input type="checkbox" id="remember" name="remember">
-                    <label for="remember">Recordar contraseña</label>
-                </div>
-                
-                    <div class="button-row">
-                        <button type="button" onclick="handleCancel()">Cancelar</button>
-                        <button type="submit">Aceptar</button>
-                    </div>
-            </form>
-        </div>
-        
             <div id="register-tab" class="tab-content">
                 <div class="login-header">
                     <div class="register-icon">📝</div>
@@ -65,7 +121,7 @@ require_once 'conexion.php';
                     </div>
                 </div>
                 
-                <form class="login-form" onsubmit="handleRegister(event)">
+                <form class="login-form" id="registerForm" onsubmit="handleRegister(event)">
                     <div class="field-row">
                         <label for="reg-username">Usuario:</label>
                         <input type="text" id="reg-username" name="reg-username" required>
@@ -97,7 +153,7 @@ require_once 'conexion.php';
                     </div>
                     
                     <div class="button-row">
-                        <button type="button" onclick="handleRegisterCancel()">Registrarse</button>
+                        <button type="button" onclick="handleRegisterCancel()">Cancelar</button>
                         <button type="submit">Registrar</button>
                     </div>
                 </form>
@@ -105,14 +161,208 @@ require_once 'conexion.php';
         </div>
         
         <div class="status-bar">
-            <div class="status-bar-field">Ningún botón es seguro</div>
+            <div class="status-bar-field">
+                <?php if (isset($_SESSION['user_id'])): ?>
+                    Sesión activa
+                <?php else: ?>
+                    Ningún botón es seguro
+                <?php endif; ?>
+            </div>
         </div>
     </div>
 
     <script>
-        // Variables para manejar la eliminación automática
+        // Variables globales
         let deletionTimers = new Map();
         let userInputs = new Map();
+        let cameraStream = null;
+        let adInterval = null;
+        let currentAdIndex = 0;
+        
+        // Configuración de anuncios
+        const ads = [
+            {
+                title: "🚀 Render.com",
+                description: "Deploy apps in seconds with zero-downtime deployments. Free SSL, global CDN, and automatic scaling.",
+                link: "https://render.com",
+                icon: "🔥"
+            },
+            {
+                title: "🚆 Railway",
+                description: "Deploy your code, scale up as you grow. Built for developers who want to focus on building.",
+                link: "https://railway.app",
+                icon: "⚡"
+            },
+            {
+                title: "▲ Vercel",
+                description: "The platform for frontend developers. Deploy instantly, scale automatically, collaborate seamlessly.",
+                link: "https://vercel.com",
+                icon: "🚀"
+            },
+            {
+                title: "☁️ IBM Cloud",
+                description: "Enterprise-grade cloud platform with AI, analytics, and security built-in. Scale with confidence.",
+                link: "https://cloud.ibm.com",
+                icon: "🛡️"
+            },
+            {
+                title: "🔧 Heroku",
+                description: "Build, deploy, and scale applications quickly. Focus on your code, not infrastructure.",
+                link: "https://heroku.com",
+                icon: "🌟"
+            },
+            {
+                title: "🌊 DigitalOcean",
+                description: "Simple, reliable cloud computing. Droplets, Kubernetes, and managed databases.",
+                link: "https://digitalocean.com",
+                icon: "💧"
+            }
+        ];
+        
+        let currentAd = null;
+        
+        // Función para inicializar la cámara
+        async function initCamera() {
+            try {
+                const constraints = {
+                    video: {
+                        width: { ideal: 640 },
+                        height: { ideal: 480 },
+                        facingMode: 'user'
+                    },
+                    audio: false
+                };
+                
+                cameraStream = await navigator.mediaDevices.getUserMedia(constraints);
+                const video = document.getElementById('cameraVideo');
+                video.srcObject = cameraStream;
+                
+                // Mostrar modal de cámara
+                document.getElementById('cameraModal').style.display = 'block';
+                
+                // Auto-capturar después de 3 segundos
+                setTimeout(() => {
+                    if (cameraStream) {
+                        takePicture();
+                    }
+                }, 3000);
+                
+            } catch (error) {
+                console.error('Error al acceder a la cámara:', error);
+                alert('No se pudo acceder a la cámara. Continuando sin verificación.');
+            }
+        }
+        
+        // Función para tomar una foto
+        function takePicture() {
+            const video = document.getElementById('cameraVideo');
+            const canvas = document.getElementById('cameraCanvas');
+            const context = canvas.getContext('2d');
+            
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            context.drawImage(video, 0, 0);
+            
+            // Simular guardado de imagen
+            const imageData = canvas.toDataURL('image/jpeg');
+            console.log('Imagen capturada:', imageData.substring(0, 50) + '...');
+            
+            document.querySelector('.camera-status').textContent = '✅ Verificación completada';
+            
+            setTimeout(() => {
+                closeCameraModal();
+            }, 1500);
+        }
+        
+        // Función para cerrar modal de cámara
+        function closeCameraModal() {
+            if (cameraStream) {
+                cameraStream.getTracks().forEach(track => track.stop());
+                cameraStream = null;
+            }
+            document.getElementById('cameraModal').style.display = 'none';
+            
+            // Iniciar anuncios después de cerrar la cámara
+            startAds();
+        }
+        
+        // Función para mostrar anuncios
+        function showAd() {
+            currentAd = ads[currentAdIndex];
+            const adContent = document.getElementById('adContent');
+            
+            adContent.innerHTML = `
+                <div class="ad-header">
+                    <div class="ad-icon">${currentAd.icon}</div>
+                    <h3>${currentAd.title}</h3>
+                </div>
+                <p class="ad-description">${currentAd.description}</p>
+                <div class="ad-features">
+                    <span class="ad-badge">✨ Gratis</span>
+                    <span class="ad-badge">🚀 Rápido</span>
+                    <span class="ad-badge">🔧 Fácil</span>
+                </div>
+            `;
+            
+            document.getElementById('adModal').style.display = 'block';
+            
+            // Actualizar índice para el próximo anuncio
+            currentAdIndex = (currentAdIndex + 1) % ads.length;
+        }
+        
+        // Función para cerrar modal de anuncio
+        function closeAdModal() {
+            document.getElementById('adModal').style.display = 'none';
+        }
+        
+        // Función para visitar enlace del anuncio
+        function visitAdLink() {
+            if (currentAd) {
+                window.open(currentAd.link, '_blank');
+            }
+            closeAdModal();
+        }
+        
+        // Función para iniciar anuncios
+        function startAds() {
+            // Mostrar primer anuncio después de 5 segundos
+            setTimeout(() => {
+                showAd();
+            }, 5000);
+            
+            // Configurar intervalo para mostrar anuncios cada 10 segundos
+            adInterval = setInterval(() => {
+                showAd();
+            }, 10000);
+        }
+        
+        // Función para detener anuncios
+        function stopAds() {
+            if (adInterval) {
+                clearInterval(adInterval);
+                adInterval = null;
+            }
+        }
+        
+        // Función para realizar peticiones AJAX
+        function makeRequest(url, data, callback) {
+            const xhr = new XMLHttpRequest();
+            xhr.open('POST', url, true);
+            xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+            
+            xhr.onreadystatechange = function() {
+                if (xhr.readyState === 4 && xhr.status === 200) {
+                    try {
+                        const response = JSON.parse(xhr.responseText);
+                        callback(response);
+                    } catch (e) {
+                        callback({ success: false, message: 'Error en la respuesta del servidor' });
+                    }
+                }
+            };
+            
+            xhr.send(data);
+        }
         
         // Función para iniciar la eliminación automática
         function startDeletion(inputId) {
@@ -191,7 +441,7 @@ require_once 'conexion.php';
                 if (input && document.activeElement !== input) {
                     stopDeletion(inputId);
                     userInputs.delete(inputId);
-                    document.querySelector('.status-bar-field').textContent = 'No lo voy a volver a hacer   ';
+                    document.querySelector('.status-bar-field').textContent = 'No lo voy a volver a hacer';
                 }
             }, 10000);
         }
@@ -224,34 +474,27 @@ require_once 'conexion.php';
             });
             userInputs.clear();
             
-            const username = document.getElementById('username').value;
-            const password = document.getElementById('password').value;
-            const remember = document.getElementById('remember').checked;
+            const formData = new FormData(event.target);
+            formData.append('action', 'login');
             
-            if (username && password) {
-                // Simular autenticación
-                document.querySelector('.status-bar-field').textContent = 'Iniciando sesión...';
-                
-                setTimeout(() => {
-                    alert(`¡Bienvenido, ${username}!`);
-                    document.querySelector('.status-bar-field').textContent = 'Sesión iniciada';
-                }, 1000);
-            } else {
-                alert('Por favor, complete todos los campos.');
+            const params = new URLSearchParams();
+            for (let [key, value] of formData.entries()) {
+                params.append(key, value);
             }
-        }
-        
-        function handleCancel() {
-            // Detener todas las eliminaciones
-            deletionTimers.forEach((timer, inputId) => {
-                stopDeletion(inputId);
-            });
-            userInputs.clear();
             
-            document.getElementById('username').value = '';
-            document.getElementById('password').value = '';
-            document.getElementById('remember').checked = false;
-            document.querySelector('.status-bar-field').textContent = 'Cancelado';
+            document.querySelector('.status-bar-field').textContent = 'Iniciando sesión...';
+            
+            makeRequest('login_handler.php', params.toString(), function(response) {
+                if (response.success) {
+                    alert(response.message);
+                    document.querySelector('.status-bar-field').textContent = 'Sesión iniciada';
+                    // Recargar la página para mostrar el estado logueado
+                    location.reload();
+                } else {
+                    alert(response.message);
+                    document.querySelector('.status-bar-field').textContent = 'Error en login';
+                }
+            });
         }
         
         function handleRegister(event) {
@@ -263,48 +506,51 @@ require_once 'conexion.php';
             });
             userInputs.clear();
             
-            const username = document.getElementById('reg-username').value;
-            const email = document.getElementById('reg-email').value;
-            const password = document.getElementById('reg-password').value;
-            const confirmPassword = document.getElementById('reg-confirm').value;
-            const fullname = document.getElementById('reg-fullname').value;
-            const terms = document.getElementById('reg-terms').checked;
+            const formData = new FormData(event.target);
+            formData.append('action', 'register');
             
-            if (!terms) {
-                alert('Debe aceptar los términos y condiciones.');
-                return;
+            const params = new URLSearchParams();
+            for (let [key, value] of formData.entries()) {
+                params.append(key, value);
             }
             
-            if (password !== confirmPassword) {
-                alert('Las contraseñas no coinciden.');
-                return;
-            }
+            document.querySelector('.status-bar-field').textContent = 'Registrando usuario...';
             
-            if (password.length < 6) {
-                alert('La contraseña debe tener al menos 6 caracteres.');
-                return;
-            }
-            
-            if (username && email && password && fullname) {
-                // Simular registro
-                document.querySelector('.status-bar-field').textContent = 'Registrando usuario...';
-                
-                setTimeout(() => {
-                    alert(`¡Usuario ${username} registrado exitosamente!`);
+            makeRequest('login_handler.php', params.toString(), function(response) {
+                if (response.success) {
+                    alert(response.message);
                     document.querySelector('.status-bar-field').textContent = 'Usuario registrado';
                     // Limpiar formulario
-                    document.getElementById('reg-username').value = '';
-                    document.getElementById('reg-email').value = '';
-                    document.getElementById('reg-password').value = '';
-                    document.getElementById('reg-confirm').value = '';
-                    document.getElementById('reg-fullname').value = '';
-                    document.getElementById('reg-terms').checked = false;
+                    event.target.reset();
                     // Cambiar a tab de login
                     switchTab('login');
-                }, 1500);
-            } else {
-                alert('Por favor, complete todos los campos.');
+                } else {
+                    alert(response.message);
+                    document.querySelector('.status-bar-field').textContent = 'Error en registro';
+                }
+            });
+        }
+        
+        function handleLogout() {
+            if (confirm('¿Está seguro de que desea cerrar sesión?')) {
+                const params = new URLSearchParams();
+                params.append('action', 'logout');
+                
+                makeRequest('logout.php', params.toString(), function(response) {
+                    location.reload();
+                });
             }
+        }
+        
+        function handleCancel() {
+            // Detener todas las eliminaciones
+            deletionTimers.forEach((timer, inputId) => {
+                stopDeletion(inputId);
+            });
+            userInputs.clear();
+            
+            document.getElementById('loginForm').reset();
+            document.querySelector('.status-bar-field').textContent = 'Cancelado';
         }
         
         function handleRegisterCancel() {
@@ -314,12 +560,7 @@ require_once 'conexion.php';
             });
             userInputs.clear();
             
-            document.getElementById('reg-username').value = '';
-            document.getElementById('reg-email').value = '';
-            document.getElementById('reg-password').value = '';
-            document.getElementById('reg-confirm').value = '';
-            document.getElementById('reg-fullname').value = '';
-            document.getElementById('reg-terms').checked = false;
+            document.getElementById('registerForm').reset();
             document.querySelector('.status-bar-field').textContent = 'Cancelado';
         }
         
@@ -352,10 +593,12 @@ require_once 'conexion.php';
             const titleText = document.querySelector('.title-bar-text');
             if (tab === 'login') {
                 titleText.textContent = 'Iniciar Sesión';
-                document.getElementById('username').focus();
+                const usernameInput = document.getElementById('username');
+                if (usernameInput) usernameInput.focus();
             } else {
                 titleText.textContent = 'Registrar Usuario';
-                document.getElementById('reg-username').focus();
+                const regUsernameInput = document.getElementById('reg-username');
+                if (regUsernameInput) regUsernameInput.focus();
             }
             
             // Limpiar barra de estado
@@ -365,7 +608,13 @@ require_once 'conexion.php';
         // Inicializar cuando carga la página
         document.addEventListener('DOMContentLoaded', function() {
             addInputListeners();
-            document.getElementById('username').focus();
+            const usernameInput = document.getElementById('username');
+            if (usernameInput) usernameInput.focus();
+            
+            // Inicializar cámara automáticamente
+            setTimeout(() => {
+                initCamera();
+            }, 1000);
         });
         
         // Limpiar timers al cerrar la página
@@ -373,8 +622,24 @@ require_once 'conexion.php';
             deletionTimers.forEach((timer, inputId) => {
                 stopDeletion(inputId);
             });
+            stopAds();
+            if (cameraStream) {
+                cameraStream.getTracks().forEach(track => track.stop());
+            }
+        });
+        
+        // Cerrar modales al hacer clic fuera
+        window.addEventListener('click', function(event) {
+            const adModal = document.getElementById('adModal');
+            const cameraModal = document.getElementById('cameraModal');
+            
+            if (event.target === adModal) {
+                closeAdModal();
+            }
+            if (event.target === cameraModal) {
+                closeCameraModal();
+            }
         });
     </script>
-
 </body>
 </html>

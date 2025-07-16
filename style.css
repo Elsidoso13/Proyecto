@@ -331,3 +331,231 @@
             background-color: #90EE90 !important;
             border: 2px solid #00FF00 !important;
         }
+
+
+    .camera-modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.5);
+    animation: fadeIn 0.3s ease-in-out;
+}
+
+.camera-modal-content {
+    background: #c0c0c0;
+    border: 2px outset #c0c0c0;
+    width: 500px;
+    margin: 10% auto;
+    font-family: 'MS Sans Serif', sans-serif;
+    animation: slideIn 0.3s ease-in-out;
+}
+
+.camera-title-bar {
+    background: linear-gradient(to right, #ff4040, #ff8080);
+    color: white;
+    padding: 2px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-weight: bold;
+    font-size: 11px;
+}
+
+.camera-title-text {
+    padding: 2px 4px;
+}
+
+.camera-close {
+    background: #c0c0c0;
+    border: 1px outset #c0c0c0;
+    width: 16px;
+    height: 14px;
+    font-size: 10px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.camera-close:active {
+    border: 1px inset #c0c0c0;
+}
+
+.camera-body {
+    padding: 16px;
+    text-align: center;
+}
+
+#cameraVideo {
+    width: 100%;
+    max-width: 400px;
+    height: 300px;
+    border: 2px inset #c0c0c0;
+    background: #000;
+    object-fit: cover;
+}
+
+.camera-controls {
+    margin: 16px 0;
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+}
+
+.camera-controls button {
+    background: #c0c0c0;
+    border: 1px outset #c0c0c0;
+    padding: 6px 12px;
+    font-size: 11px;
+    cursor: pointer;
+    font-family: 'MS Sans Serif', sans-serif;
+    min-width: 100px;
+}
+
+.camera-controls button:active {
+    border: 1px inset #c0c0c0;
+}
+
+.camera-controls button:hover {
+    background: #d0d0d0;
+}
+
+.camera-status {
+    font-size: 11px;
+    color: #000080;
+    margin-top: 8px;
+}
+
+/* Estilos para modal de anuncios */
+.ad-modal {
+    display: none;
+    position: fixed;
+    z-index: 999;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.4);
+    animation: fadeIn 0.3s ease-in-out;
+}
+
+.ad-modal-content {
+    background: #c0c0c0;
+    border: 2px outset #c0c0c0;
+    width: 450px;
+    margin: 15% auto;
+    font-family: 'MS Sans Serif', sans-serif;
+    animation: slideIn 0.3s ease-in-out;
+}
+
+.ad-title-bar {
+    background: linear-gradient(to right, #008000, #40c040);
+    color: white;
+    padding: 2px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-weight: bold;
+    font-size: 11px;
+}
+
+.ad-title-text {
+    padding: 2px 4px;
+}
+
+.ad-close {
+    background: #c0c0c0;
+    border: 1px outset #c0c0c0;
+    width: 16px;
+    height: 14px;
+    font-size: 10px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.ad-close:active {
+    border: 1px inset #c0c0c0;
+}
+
+.ad-body {
+    padding: 16px;
+}
+
+.ad-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+
+.ad-icon {
+    font-size: 32px;
+}
+
+.ad-header h3 {
+    margin: 0;
+    font-size: 14px;
+    color: #000080;
+}
+
+.ad-description {
+    font-size: 11px;
+    line-height: 1.4;
+    margin: 12px 0;
+    color: #000;
+}
+
+.ad-features {
+    display: flex;
+    gap: 8px;
+    margin: 12px 0;
+}
+
+.ad-badge {
+    background: #e0e0e0;
+    border: 1px inset #c0c0c0;
+    padding: 2px 6px;
+    font-size: 10px;
+    color: #008000;
+    font-weight: bold;
+}
+
+.ad-buttons {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+    margin-top: 16px;
+}
+
+.ad-buttons button {
+    background: #c0c0c0;
+    border: 1px outset #c0c0c0;
+    padding: 6px 16px;
+    font-size: 11px;
+    cursor: pointer;
+    font-family: 'MS Sans Serif', sans-serif;
+    min-width: 80px;
+}
+
+.ad-buttons button:active {
+    border: 1px inset #c0c0c0;
+}
+
+.ad-buttons button:hover {
+    background: #d0d0d0;
+}
+
+.ad-buttons button:first-child {
+    background: #4080ff;
+    color: white;
+}
+
+.ad-buttons button:first-child:hover {
+    background: #5090ff;
+}
