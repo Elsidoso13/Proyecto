@@ -1,5 +1,5 @@
 <?php
-require_once 'conection/conecta.php';
+require_once 'Conection/conecta.php';
 require_once 'login_handler.php';
 
 // Si el usuario ya está logueado, redirigir o mostrar dashboard

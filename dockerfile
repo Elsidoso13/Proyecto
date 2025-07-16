@@ -9,4 +9,4 @@ RUN chown -R www-data:www-data /var/www/html \
     && chmod -R 755 /var/www/html
 
 # Expone el puerto 80 para que Railway pueda acceder
-EXPOSE 80
+EXPOSE 8080
